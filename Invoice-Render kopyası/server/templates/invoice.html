@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Invoice</title>
+
+  <style>
+    /* ===== PRINT (PDF) ===== */
+    @page { size: A4; margin: 15mm; }
+
+    :root{
+      --navy:#001758;
+      --orange:#FE6D14;
+      --teal:#16608F;
+      --text:#0f172a;
+      --muted:#64748b;
+      --line:#e2e8f0;
+      --bg:#ffffff;
+    }
+
+    html, body{
+      margin:0;
+      padding:0;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 11.5px;
+      color: var(--text);
+      background: var(--bg);
+    }
+
+    /* ===== SCREEN PREVIEW ===== */
+    @media screen {
+      body { background:#f3f4f6; }
+
+      .page{
+        display:flex;
+        justify-content:center;
+        padding:20px 0;
+      }
+
+      .page-inner{
+        background:#fff;
+        box-shadow:0 10px 30px rgba(0,0,0,.08);
+      }
+    }
+
+    @media print {
+      .page{ box-shadow:none; }
+      .page-inner{ box-shadow:none; }
+    }
+
+    /* ===== PAGE LAYOUT (CRITICAL) ===== */
+    .page-inner{
+      width:100%;
+      padding:14mm;
+      min-height: calc(297mm - 8px - 28mm);
+      box-sizing:border-box;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .content{
+      flex:0 0 auto;
+    }
+
+    /* ===== Header ===== */
+    .topbar{
+      height:8px;
+      background: linear-gradient(90deg, var(--navy), var(--teal));
+      margin-bottom:14px;
+    }
+
+    .header{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      margin-bottom:16px;
+    }
+
+    .logo{
+      max-width:160px;
+      height:auto;
+    }
+
+    .title{
+      text-align:right;
+    }
+
+    .title h1{
+      margin:0;
+      font-size:22px;
+      letter-spacing:.6px;
+      color:var(--navy);
+    }
+
+    /* ===== Cards ===== */
+    .grid{
+      display:flex;
+      gap:14px;
+      margin-bottom:14px;
+    }
+
+    .card{
+      flex:1;
+      border:1px solid var(--line);
+      border-radius:8px;
+      padding:10px 12px;
+    }
+
+    .card h3{
+      margin:0 0 8px 0;
+      font-size:10.5px;
+      text-transform:uppercase;
+      letter-spacing:.7px;
+      color:var(--muted);
+    }
+
+    .row{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      margin:2px 0;
+      line-height:1.5;
+    }
+
+    .row span{ color:var(--muted); }
+
+    /* ===== Table ===== */
+    table{
+      width:100%;
+      border-collapse:collapse;
+      margin-top:10px;
+      border:1px solid var(--line);
+      page-break-inside:auto;
+    }
+
+    thead th{
+      background:#f8fafc;
+      font-size:10.5px;
+      color:var(--muted);
+      text-align:left;
+      padding:8px;
+      border-bottom:1px solid var(--line);
+    }
+
+    tbody td{
+      padding:8px;
+      border-bottom:1px solid var(--line);
+    }
+
+    tr{ page-break-inside:avoid; }
+
+    .num{
+      text-align:right;
+      white-space:nowrap;
+    }
+
+    /* ===== Bottom ===== */
+    .bottom{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      margin-top:14px;
+    }
+
+    .note{
+      flex:1;
+      border-left:4px solid var(--orange);
+      background:#fff7ed;
+      padding:10px 12px;
+      font-size:10.8px;
+      line-height:1.45;
+    }
+
+    .totals{
+      width:260px;
+      border:1px solid var(--line);
+      padding:10px 12px;
+    }
+
+    .trow{
+      display:flex;
+      justify-content:space-between;
+      margin:5px 0;
+    }
+
+    .grand{
+      margin-top:6px;
+      padding-top:6px;
+      border-top:1px solid var(--line);
+      font-weight:bold;
+      color:var(--navy);
+    }
+
+    /* ===== Footer (ALWAYS BOTTOM) ===== */
+    .footer{
+      margin-top:auto;
+      padding-top:10px;
+      border-top:1px solid var(--line);
+      display:flex;
+      justify-content:space-between;
+      font-size:10.2px;
+      color:var(--muted);
+    }
+
+    .footer b{ color:var(--text); }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <div class="page-inner">
+
+      <div class="topbar"></div>
+
+      <div class="content">
+
+        <div class="header">
+          <img class="logo" src="{{logo_data_uri}}" alt="PAYIZ" />
+          <div class="title">
+            <h1>INVOICE</h1>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Seller</h3>
+            <div class="row"><span>Company</span><b>{{seller.name}}</b></div>
+            <div class="row"><span>Address</span><b>{{seller.address}}</b></div>
+            <div class="row"><span>Tax Office</span><b>{{seller.taxOffice}}</b></div>
+            <div class="row"><span>Tax No</span><b>{{seller.taxId}}</b></div>
+          </div>
+
+          <div class="card">
+            <h3>Invoice Details</h3>
+            <div class="row"><span>Invoice No</span><b>{{invoice.number}}</b></div>
+            <div class="row"><span>Invoice Date</span><b>{{invoice.date}}</b></div>
+            <div class="row"><span>Service Date</span><b>{{invoice.service_date}}</b></div>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div class="card">
+            <h3>Bill To</h3>
+            <div class="row"><span>Client</span><b>{{buyer.name}}</b></div>
+            <div class="row"><span>Address</span><b>{{buyer.address}}</b></div>
+            <div class="row"><span>City</span><b>{{buyer.city}}</b></div>
+            <div class="row"><span>Country</span><b>{{buyer.country}}</b></div>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Description of Service</th>
+              <th class="num">Qty</th>
+              <th class="num">Unit</th>
+              <th class="num">Unit Price</th>
+              <th class="num">VAT</th>
+              <th class="num">Line Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{invoice_lines}}
+          </tbody>
+        </table>
+
+        <div class="bottom">
+          <div class="note">
+            <b>VAT Exemption</b><br/>
+            VAT Exempt – Service Export under Turkish VAT Law.
+            <br/><br/>
+            This invoice is issued under Turkish tax legislation.
+            This is not a UK VAT invoice.
+          </div>
+
+          <div class="totals">
+            <div class="trow"><span>Subtotal</span><b>{{totals.subtotal}}</b></div>
+            <div class="trow"><span>VAT (0%)</span><b>{{totals.vat_amount}}</b></div>
+            <div class="trow grand"><span>Total Payable</span><b>{{totals.grand_total}}</b></div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer">
+        <div>
+          <b>{{seller.name}}</b><br/>
+          {{seller.city}} – {{seller.country}}
+        </div>
+        <div>
+          <b>Contact</b><br/>
+          {{seller.email}}
+        </div>
+        <div>
+          <b>Payment</b><br/>
+          IBAN: {{payment.iban}}<br/>
+          SWIFT: {{payment.swift}}
+        </div>
+      </div>
+
+    </div>
+  </div>
+</body>
+</html>
